@@ -13,6 +13,16 @@ class NewVisitorTest(unittest.TestCase):
     def tearDown(self):
         self.browser.quit()
 
+    # Função auxiliar para verificar se um item aparece na tabela
+    def check_for_row_in_list_table(self, row_text):
+        table = self.browser.find_element(By.ID, 'id_list_table')
+        rows = table.find_elements(By.TAG_NAME, 'tr')
+
+        self.assertIn(
+            row_text,
+            [row.text for row in rows]
+        )
+
     def test_can_start_a_list_and_retrieve_it_later(self):
 
         # Maria decidiu utilizar o novo app TODO. Ela entra em sua página principal:
@@ -40,20 +50,25 @@ class NewVisitorTest(unittest.TestCase):
         time.sleep(1)
 
         # E mostra "1: Estudar testes funcionais"
-        table = self.browser.find_element(By.ID, 'id_list_table')
-        rows = table.find_elements(By.TAG_NAME, 'tr')
-
-        self.assertTrue(
-            any(
-                row.text == '1: Estudar testes funcionais'
-                for row in rows
-            )
+        self.check_for_row_in_list_table(
+            '1: Estudar testes funcionais'
         )
 
         # Ainda existe uma caixa de texto convidando para adicionar outro item
         # Ela digita: "Estudar testes de unidade"
+        inputbox = self.browser.find_element(By.ID, 'id_new_item')
+        inputbox.send_keys('Estudar testes de unidade')
+        inputbox.send_keys(Keys.ENTER)
+        time.sleep(1)
 
         # A página atualiza novamente, e agora mostra ambos os itens na sua lista
+        self.check_for_row_in_list_table(
+            '1: Estudar testes funcionais'
+        )
+
+        self.check_for_row_in_list_table(
+            '2: Estudar testes de unidade'
+        )
 
         # Maria se pergunta se o site vai lembrar da sua lista.
         # O site gerou uma URL única para ela.
